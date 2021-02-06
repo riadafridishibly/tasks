@@ -53,6 +53,7 @@ func GetNginxBlock(lines *[]*string, startIndex, endIndex, recursionMax int) *Ng
 func getNginxBlockHelper(lines []*string, startIndex, endIndex, recursionMax int) (int, *NginxBlock) {
 	b := &NginxBlock{}
 	b.StartLine = *lines[startIndex]
+	b.AllLines = &lines
 	startIndex++
 	depth := 0
 
@@ -65,7 +66,6 @@ func getNginxBlockHelper(lines []*string, startIndex, endIndex, recursionMax int
 			} else {
 				depth++
 				b.AllContents += *lines[startIndex]
-				*b.AllLines = append(*b.AllLines, lines[startIndex])
 			}
 		} else if strings.Contains(*lines[startIndex], "}") {
 			if depth == 0 {
@@ -83,10 +83,8 @@ func getNginxBlockHelper(lines []*string, startIndex, endIndex, recursionMax int
 			}
 			depth--
 			b.AllContents += *lines[startIndex]
-			*b.AllLines = append(*b.AllLines, lines[startIndex])
 		} else {
 			b.AllContents += *lines[startIndex]
-			*b.AllLines = append(*b.AllLines, lines[startIndex])
 		}
 	}
 	return startIndex, b
