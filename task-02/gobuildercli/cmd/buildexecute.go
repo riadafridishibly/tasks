@@ -22,14 +22,16 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/cobra"
 )
 
 var (
-	buildDir string
-	copyDir  string
-	exeName  string
+	buildDir    string
+	copyDir     string
+	exeName     string
+	exclueTests bool
 )
 
 func handleCopy(dest, src string) error {
@@ -37,7 +39,6 @@ func handleCopy(dest, src string) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(matches)
 	for _, match := range matches {
 		fiSrc, err := os.Stat(match)
 		if err != nil {
@@ -95,8 +96,9 @@ var buildexecuteCmd = &cobra.Command{
 func init() {
 	// TODO: how to do single dash?
 	buildexecuteCmd.Flags().StringVarP(&buildDir, "builddir", "d", ".", "Copy destination")
-	buildexecuteCmd.Flags().StringVarP(&copyDir, "copydir", "c", ".", "Copy source")
+	buildexecuteCmd.Flags().StringVarP(&copyDir, "copydir", "c", "", "Copy source")
 	buildexecuteCmd.Flags().StringVarP(&exeName, "exe", "o", "", "Executable name")
+	buildexecuteCmd.Flags().BoolVarP(&exclueTests, "exclude-tests", "e", false, "Exclude test files")
 	rootCmd.AddCommand(buildexecuteCmd)
 
 	// Here you will define your flags and configuration settings.
@@ -117,6 +119,12 @@ func init() {
 // of the source file. The file mode will be copied from the source and
 // the copied data is synced/flushed to stable storage.
 func CopyFile(src, dst string) (err error) {
+	if exclueTests {
+		if strings.HasSuffix(src, "_test.go") {
+			return
+		}
+	}
+
 	in, err := os.Open(src)
 	if err != nil {
 		return
